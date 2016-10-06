@@ -90,21 +90,38 @@ PHP_FUNCTION(cabocha_parse)
     } ZEND_HASH_FILL_END();
     add_assoc_zval(return_value, "chunk", &chunks);
 
+    /* Store chunk entries */
+    zval **entries = calloc(chunk_size, sizeof(zval *));
+    zval *entry;
+    int k = 0;
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL(chunks), entry) {
+        entries[k++] = entry;
+    } ZEND_HASH_FOREACH_END();
+
     /* Add tokens to return_value */
     zval tokens;
     size_t token_size = cabocha_tree_token_size(tree);
     array_init_size(&tokens, token_size);
     zend_hash_real_init(Z_ARRVAL(tokens), 1);
+    k = 0;
     ZEND_HASH_FILL_PACKED(Z_ARRVAL(tokens)) {
         int i;
         for (i = 0; i < token_size; ++i) {
           cabocha_token_t *token = cabocha_tree_token(tree, i);
           zval_token(token, &zv);
+          if (token->chunk != NULL) {
+            // assert(token->chunk == cabocha_tree_chunk(tree, k));
+            add_assoc_zval(&zv, "chunk", entries[k]);
+            Z_ADDREF_P(entries[k++]);
+          } else {
+            add_assoc_null(&zv, "chunk");
+          }
           ZEND_HASH_FILL_ADD(&zv);
         }
     } ZEND_HASH_FILL_END();
     add_assoc_zval(return_value, "token", &tokens);
 
+    free(entries);
     cabocha_destroy(cabocha);
 }
 /* }}} */
