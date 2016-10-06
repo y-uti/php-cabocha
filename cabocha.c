@@ -27,6 +27,8 @@
 #include "ext/standard/info.h"
 #include "php_cabocha.h"
 
+#include "cabocha.h"
+
 /* If you declare any globals in php_cabocha.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(cabocha)
 */
@@ -72,6 +74,123 @@ PHP_FUNCTION(confirm_cabocha_compiled)
    follow this convention for the convenience of others editing your code.
 */
 
+static void zval_chunk(cabocha_chunk_t *chunk, zval *zv);
+static void zval_token(cabocha_token_t *token, zval *zv);
+static void zval_feature_list(char **feature_list, size_t feature_list_size, zval *zv);
+
+/* {{{ proto array cabocha_parse(string arg)
+ */
+PHP_FUNCTION(cabocha_parse)
+{
+    char *arg = NULL;
+    size_t arg_len;
+
+    cabocha_t *cabocha;
+    cabocha_tree_t *tree;
+
+    zval zv;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    cabocha = cabocha_new(0, NULL);
+    tree = cabocha_sparse_totree(cabocha, arg);
+
+    array_init(return_value);
+
+    /* Add sentence to return_value */
+    char *sentence = cabocha_tree_sentence(tree);
+    add_assoc_string(return_value, "sentence", sentence);
+
+    /* Add chunks to return_value */
+    zval chunks;
+    size_t chunk_size = cabocha_tree_chunk_size(tree);
+    array_init_size(&chunks, chunk_size);
+    zend_hash_real_init(Z_ARRVAL(chunks), 1);
+    ZEND_HASH_FILL_PACKED(Z_ARRVAL(chunks)) {
+        int i;
+        for (i = 0; i < chunk_size; ++i) {
+            cabocha_chunk_t *chunk = cabocha_tree_chunk(tree, i);
+            zval_chunk(chunk, &zv);
+            ZEND_HASH_FILL_ADD(&zv);
+        }
+    } ZEND_HASH_FILL_END();
+    add_assoc_zval(return_value, "chunk", &chunks);
+
+    /* Add tokens to return_value */
+    zval tokens;
+    size_t token_size = cabocha_tree_token_size(tree);
+    array_init_size(&tokens, token_size);
+    zend_hash_real_init(Z_ARRVAL(tokens), 1);
+    ZEND_HASH_FILL_PACKED(Z_ARRVAL(tokens)) {
+        int i;
+        for (i = 0; i < token_size; ++i) {
+          cabocha_token_t *token = cabocha_tree_token(tree, i);
+          zval_token(token, &zv);
+          ZEND_HASH_FILL_ADD(&zv);
+        }
+    } ZEND_HASH_FILL_END();
+    add_assoc_zval(return_value, "token", &tokens);
+
+    cabocha_destroy(cabocha);
+}
+/* }}} */
+
+#define ADD_ASSOC_STRING(zval, key, val) \
+    if ((val) == NULL) { \
+        add_assoc_null(zval, key); \
+    } else { \
+        add_assoc_string(zval, key, val); \
+    }
+
+static void zval_chunk(cabocha_chunk_t *chunk, zval *zv)
+{
+    array_init(zv);
+
+    add_assoc_long(zv, "link", chunk->link);
+    add_assoc_long(zv, "head_pos", chunk->head_pos);
+    add_assoc_long(zv, "func_pos", chunk->func_pos);
+    add_assoc_long(zv, "token_size", chunk->token_size);
+    add_assoc_long(zv, "token_pos", chunk->token_pos);
+    add_assoc_double(zv, "score", chunk->score);
+    ADD_ASSOC_STRING(zv, "additional_info", chunk->additional_info);
+    add_assoc_long(zv, "feature_list_size", chunk->feature_list_size);
+
+    zval_feature_list(chunk->feature_list, chunk->feature_list_size, zv);
+}
+
+static void zval_token(cabocha_token_t *token, zval *zv)
+{
+    array_init(zv);
+
+    ADD_ASSOC_STRING(zv, "surface", token->surface);
+    ADD_ASSOC_STRING(zv, "normalized_surface", token->normalized_surface);
+    ADD_ASSOC_STRING(zv, "feature", token->feature);
+    add_assoc_long(zv, "feature_list_size", token->feature_list_size);
+    ADD_ASSOC_STRING(zv, "ne", token->ne);
+    ADD_ASSOC_STRING(zv, "additional_info", token->additional_info);
+
+    zval_feature_list(token->feature_list, token->feature_list_size, zv);
+}
+
+static void zval_feature_list(char **feature_list, size_t feature_list_size, zval *zv)
+{
+    zval features;
+
+    array_init_size(&features, feature_list_size);
+    zend_hash_real_init(Z_ARRVAL(features), 1);
+    ZEND_HASH_FILL_PACKED(Z_ARRVAL(features)) {
+        int j;
+        for (j = 0; j < feature_list_size; ++j) {
+            zval f;
+            char *feature = feature_list[j];
+            ZVAL_STRING(&f, feature);
+            ZEND_HASH_FILL_ADD(&f);
+        }
+    } ZEND_HASH_FILL_END();
+    add_assoc_zval(zv, "feature_list", &features);
+}
 
 /* {{{ php_cabocha_init_globals
  */
@@ -147,6 +266,7 @@ PHP_MINFO_FUNCTION(cabocha)
  */
 const zend_function_entry cabocha_functions[] = {
 	PHP_FE(confirm_cabocha_compiled,	NULL)		/* For testing, remove later. */
+    PHP_FE(cabocha_parse, NULL)
 	PHP_FE_END	/* Must be the last line in cabocha_functions[] */
 };
 /* }}} */
