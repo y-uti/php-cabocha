@@ -57,16 +57,24 @@ PHP_FUNCTION(cabocha_parse)
     char *arg = NULL;
     size_t arg_len;
 
+    char *opt = NULL;
+    size_t opt_len;
+
     cabocha_t *cabocha;
     cabocha_tree_t *tree;
 
     zval zv;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s", &arg, &arg_len, &opt, &opt_len) == FAILURE) {
         RETURN_FALSE;
     }
 
-    cabocha = cabocha_new(0, NULL);
+    if (opt == NULL) {
+        cabocha = cabocha_new(0, NULL);
+    } else {
+        cabocha = cabocha_new2(opt);
+    }
+
     tree = cabocha_sparse_totree(cabocha, arg);
 
     array_init(return_value);
