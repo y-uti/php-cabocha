@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Yuji Uchiyama <y.uchiyama.1015@gmail.com>                    |
   +----------------------------------------------------------------------+
 */
 
@@ -50,7 +50,7 @@ static void zval_chunk(cabocha_chunk_t *chunk, zval *zv);
 static void zval_token(cabocha_token_t *token, zval *zv);
 static void zval_feature_list(char **feature_list, size_t feature_list_size, zval *zv);
 
-/* {{{ proto array cabocha_parse(string arg)
+/* {{{ proto array cabocha_parse(string arg, string opt = null)
  */
 PHP_FUNCTION(cabocha_parse)
 {
