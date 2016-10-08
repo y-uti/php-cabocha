@@ -16,7 +16,6 @@ foreach ($tree['chunk'] as $i => $chunk) {
         if (($ne = $token['ne']) !== "O") {
             $text .= "<$ne>";
         }
-
     }
     $link = $chunk['link'];
     echo "$i: $text ($link)\n";

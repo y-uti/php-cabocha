@@ -7,11 +7,11 @@ extern zend_module_entry cabocha_module_entry;
 #define PHP_CABOCHA_VERSION "0.1.0" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
-#	define PHP_CABOCHA_API __declspec(dllexport)
+#   define PHP_CABOCHA_API __declspec(dllexport)
 #elif defined(__GNUC__) && __GNUC__ >= 4
-#	define PHP_CABOCHA_API __attribute__ ((visibility("default")))
+#   define PHP_CABOCHA_API __attribute__ ((visibility("default")))
 #else
-#	define PHP_CABOCHA_API
+#   define PHP_CABOCHA_API
 #endif
 
 #ifdef ZTS
@@ -19,12 +19,12 @@ extern zend_module_entry cabocha_module_entry;
 #endif
 
 /*
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:
+    Declare any global variables you may need between the BEGIN
+    and END macros here:
 
 ZEND_BEGIN_MODULE_GLOBALS(cabocha)
-	zend_long  global_value;
-	char *global_string;
+    zend_long  global_value;
+    char *global_string;
 ZEND_END_MODULE_GLOBALS(cabocha)
 */
 
@@ -38,14 +38,4 @@ ZEND_END_MODULE_GLOBALS(cabocha)
 ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 
-#endif	/* PHP_CABOCHA_H */
-
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
+#endif /* PHP_CABOCHA_H */

@@ -174,8 +174,8 @@ static void zval_feature_list(char **feature_list, size_t feature_list_size, zva
 /* Uncomment this function if you have INI entries
 static void php_cabocha_init_globals(zend_cabocha_globals *cabocha_globals)
 {
-	cabocha_globals->global_value = 0;
-	cabocha_globals->global_string = NULL;
+    cabocha_globals->global_value = 0;
+    cabocha_globals->global_string = NULL;
 }
 */
 /* }}} */
@@ -184,10 +184,10 @@ static void php_cabocha_init_globals(zend_cabocha_globals *cabocha_globals)
  */
 PHP_MINIT_FUNCTION(cabocha)
 {
-	/* If you have INI entries, uncomment these lines
-	REGISTER_INI_ENTRIES();
-	*/
-	return SUCCESS;
+    /* If you have INI entries, uncomment these lines
+    REGISTER_INI_ENTRIES();
+    */
+    return SUCCESS;
 }
 /* }}} */
 
@@ -195,10 +195,10 @@ PHP_MINIT_FUNCTION(cabocha)
  */
 PHP_MSHUTDOWN_FUNCTION(cabocha)
 {
-	/* uncomment this line if you have INI entries
-	UNREGISTER_INI_ENTRIES();
-	*/
-	return SUCCESS;
+    /* uncomment this line if you have INI entries
+    UNREGISTER_INI_ENTRIES();
+    */
+    return SUCCESS;
 }
 /* }}} */
 
@@ -208,9 +208,9 @@ PHP_MSHUTDOWN_FUNCTION(cabocha)
 PHP_RINIT_FUNCTION(cabocha)
 {
 #if defined(COMPILE_DL_CABOCHA) && defined(ZTS)
-	ZEND_TSRMLS_CACHE_UPDATE();
+    ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-	return SUCCESS;
+    return SUCCESS;
 }
 /* }}} */
 
@@ -219,7 +219,7 @@ PHP_RINIT_FUNCTION(cabocha)
  */
 PHP_RSHUTDOWN_FUNCTION(cabocha)
 {
-	return SUCCESS;
+    return SUCCESS;
 }
 /* }}} */
 
@@ -227,13 +227,13 @@ PHP_RSHUTDOWN_FUNCTION(cabocha)
  */
 PHP_MINFO_FUNCTION(cabocha)
 {
-	php_info_print_table_start();
-	php_info_print_table_header(2, "cabocha support", "enabled");
-	php_info_print_table_end();
+    php_info_print_table_start();
+    php_info_print_table_header(2, "cabocha support", "enabled");
+    php_info_print_table_end();
 
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
+    /* Remove comments if you have entries in php.ini
+    DISPLAY_INI_ENTRIES();
+    */
 }
 /* }}} */
 
@@ -243,23 +243,23 @@ PHP_MINFO_FUNCTION(cabocha)
  */
 const zend_function_entry cabocha_functions[] = {
     PHP_FE(cabocha_parse, NULL)
-	PHP_FE_END	/* Must be the last line in cabocha_functions[] */
+    PHP_FE_END  /* Must be the last line in cabocha_functions[] */
 };
 /* }}} */
 
 /* {{{ cabocha_module_entry
  */
 zend_module_entry cabocha_module_entry = {
-	STANDARD_MODULE_HEADER,
-	"cabocha",
-	cabocha_functions,
-	PHP_MINIT(cabocha),
-	PHP_MSHUTDOWN(cabocha),
-	PHP_RINIT(cabocha),		/* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(cabocha),	/* Replace with NULL if there's nothing to do at request end */
-	PHP_MINFO(cabocha),
-	PHP_CABOCHA_VERSION,
-	STANDARD_MODULE_PROPERTIES
+    STANDARD_MODULE_HEADER,
+    "cabocha",
+    cabocha_functions,
+    PHP_MINIT(cabocha),
+    PHP_MSHUTDOWN(cabocha),
+    PHP_RINIT(cabocha),     /* Replace with NULL if there's nothing to do at request start */
+    PHP_RSHUTDOWN(cabocha), /* Replace with NULL if there's nothing to do at request end */
+    PHP_MINFO(cabocha),
+    PHP_CABOCHA_VERSION,
+    STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
 
@@ -269,12 +269,3 @@ ZEND_TSRMLS_CACHE_DEFINE()
 #endif
 ZEND_GET_MODULE(cabocha)
 #endif
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */

@@ -8,6 +8,6 @@
 // ARG_ENABLE("cabocha", "enable cabocha support", "no");
 
 if (PHP_CABOCHA != "no") {
-	EXTENSION("cabocha", "cabocha.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+    EXTENSION("cabocha", "cabocha.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
 }
 
