@@ -109,6 +109,18 @@ PHP_FUNCTION(cabocha_parse)
     } ZEND_HASH_FILL_END();
     add_assoc_zval(return_value, "token", &tokens);
 
+    /* Add charset to return_value */
+    int charset = cabocha_tree_charset(tree);
+    add_assoc_long(return_value, "charset", charset);
+
+    /* Add posset to return_value */
+    int posset = cabocha_tree_posset(tree);
+    add_assoc_long(return_value, "posset", posset);
+
+    /* Add output_layer to return_value */
+    int output_layer = cabocha_tree_output_layer(tree);
+    add_assoc_long(return_value, "output_layer", output_layer);
+
     free(entries);
     cabocha_destroy(cabocha);
 }
