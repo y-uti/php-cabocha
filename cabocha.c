@@ -13,8 +13,18 @@
 ZEND_DECLARE_MODULE_GLOBALS(cabocha)
 */
 
+#define PHP_CABOCHA_RES_NAME "cabocha"
+
 /* True global resources - no need for thread safety here */
 static int le_cabocha;
+
+static void php_cabocha_dtor(zend_resource *resource)
+{
+    cabocha_t *cabocha = (cabocha_t *) resource->ptr;
+    if (cabocha) {
+        cabocha_destroy(cabocha);
+    }
+}
 
 /* {{{ PHP_INI
  */
@@ -29,6 +39,147 @@ PHP_INI_END()
 static void zval_chunk(cabocha_chunk_t *chunk, zval *zv);
 static void zval_token(cabocha_token_t *token, zval *zv);
 static void zval_feature_list(char **feature_list, size_t feature_list_size, zval *zv);
+
+/* {{{ proto cabocha cabocha_new(string arg)
+ */
+PHP_FUNCTION(cabocha_new)
+{
+    char *arg = NULL;
+    size_t arg_len;
+
+    cabocha_t *cabocha;
+    zend_resource *res;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s", &arg, &arg_len) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    cabocha = arg ? cabocha_new2(arg) : cabocha_new(0, NULL);
+
+    RETURN_RES(zend_register_resource(cabocha, le_cabocha));
+}
+/* }}} */
+
+/* {{{ proto void cabocha_destroy(cabocha cabocha)
+ */
+PHP_FUNCTION(cabocha_destroy)
+{
+    zval *zv;
+    cabocha_t *cabocha;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zv) == FAILURE) {
+        return;
+    }
+
+    cabocha = (cabocha_t *) zend_fetch_resource(
+        Z_RES_P(zv),
+        PHP_CABOCHA_RES_NAME,
+        le_cabocha
+    );
+    if (!cabocha) {
+        return;
+    }
+
+    zend_list_close(Z_RES_P(zv));
+}
+/* }}} */
+
+/* {{{ proto array cabocha_parse2(cabocha cabocha, string arg)
+ */
+PHP_FUNCTION(cabocha_parse2)
+{
+    zval *zptr;
+    cabocha_t *cabocha;
+
+    char *arg = NULL;
+    size_t arg_len;
+
+    cabocha_tree_t *tree;
+
+    zval zv;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs", &zptr, &arg, &arg_len) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    cabocha = (cabocha_t *) zend_fetch_resource(
+        Z_RES_P(zptr),
+        PHP_CABOCHA_RES_NAME,
+        le_cabocha
+    );
+    if (!cabocha) {
+        return;
+    }
+
+    tree = cabocha_sparse_totree(cabocha, arg);
+
+    array_init(return_value);
+
+    /* Add sentence to return_value */
+    char *sentence = cabocha_tree_sentence(tree);
+    add_assoc_string(return_value, "sentence", sentence);
+
+    /* Add chunks to return_value */
+    zval chunks;
+    size_t chunk_size = cabocha_tree_chunk_size(tree);
+    array_init_size(&chunks, chunk_size);
+    zend_hash_real_init(Z_ARRVAL(chunks), 1);
+    ZEND_HASH_FILL_PACKED(Z_ARRVAL(chunks)) {
+        int i;
+        for (i = 0; i < chunk_size; ++i) {
+            cabocha_chunk_t *chunk = cabocha_tree_chunk(tree, i);
+            zval_chunk(chunk, &zv);
+            ZEND_HASH_FILL_ADD(&zv);
+        }
+    } ZEND_HASH_FILL_END();
+    add_assoc_zval(return_value, "chunk", &chunks);
+
+    /* Store chunk entries */
+    zval **entries = calloc(chunk_size, sizeof(zval *));
+    zval *entry;
+    int k = 0;
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL(chunks), entry) {
+        entries[k++] = entry;
+    } ZEND_HASH_FOREACH_END();
+
+    /* Add tokens to return_value */
+    zval tokens;
+    size_t token_size = cabocha_tree_token_size(tree);
+    array_init_size(&tokens, token_size);
+    zend_hash_real_init(Z_ARRVAL(tokens), 1);
+    k = 0;
+    ZEND_HASH_FILL_PACKED(Z_ARRVAL(tokens)) {
+        int i;
+        for (i = 0; i < token_size; ++i) {
+          cabocha_token_t *token = cabocha_tree_token(tree, i);
+          zval_token(token, &zv);
+          if (token->chunk != NULL) {
+            // assert(token->chunk == cabocha_tree_chunk(tree, k));
+            add_assoc_zval(&zv, "chunk", entries[k]);
+            Z_ADDREF_P(entries[k++]);
+          } else {
+            add_assoc_null(&zv, "chunk");
+          }
+          ZEND_HASH_FILL_ADD(&zv);
+        }
+    } ZEND_HASH_FILL_END();
+    add_assoc_zval(return_value, "token", &tokens);
+
+    /* Add charset to return_value */
+    int charset = cabocha_tree_charset(tree);
+    add_assoc_long(return_value, "charset", charset);
+
+    /* Add posset to return_value */
+    int posset = cabocha_tree_posset(tree);
+    add_assoc_long(return_value, "posset", posset);
+
+    /* Add output_layer to return_value */
+    int output_layer = cabocha_tree_output_layer(tree);
+    add_assoc_long(return_value, "output_layer", output_layer);
+
+    free(entries);
+}
+/* }}} */
 
 /* {{{ proto array cabocha_parse(string arg, string opt = null)
  */
@@ -200,6 +351,13 @@ PHP_MINIT_FUNCTION(cabocha)
     REGISTER_INI_ENTRIES();
     */
 
+    le_cabocha = zend_register_list_destructors_ex(
+        php_cabocha_dtor,
+        NULL,
+        PHP_CABOCHA_RES_NAME,
+        module_number
+    );
+
 #define PHP_CABOCHA_REGISTER_CONSTANT(name) \
     REGISTER_LONG_CONSTANT(#name, name, CONST_CS | CONST_PERSISTENT)
 
@@ -292,7 +450,10 @@ PHP_MINFO_FUNCTION(cabocha)
  * Every user visible function must have an entry in cabocha_functions[].
  */
 const zend_function_entry cabocha_functions[] = {
+    PHP_FE(cabocha_new, NULL)
+    PHP_FE(cabocha_destroy, NULL)
     PHP_FE(cabocha_parse, NULL)
+    PHP_FE(cabocha_parse2, NULL)
     PHP_FE_END  /* Must be the last line in cabocha_functions[] */
 };
 /* }}} */
