@@ -1,28 +1,13 @@
-dnl $Id$
 dnl config.m4 for extension cabocha
 
-dnl Comments in this file start with the string 'dnl'.
-dnl Remove where necessary. This file will not work
-dnl without editing.
-
-dnl If your extension references something external, use with:
-
 PHP_ARG_WITH(cabocha, for cabocha support,
-Make sure that the comment is aligned:
 [  --with-cabocha          Include cabocha support])
 
-dnl Otherwise use enable:
-
-dnl PHP_ARG_ENABLE(cabocha, whether to enable cabocha support,
-dnl Make sure that the comment is aligned:
-dnl [  --enable-cabocha           Enable cabocha support])
-
 if test "$PHP_CABOCHA" != "no"; then
-  dnl Write more examples of tests here...
 
   # --with-cabocha -> check with-path
-  SEARCH_PATH="/usr/local /usr"     # you might want to change this
-  SEARCH_FOR="/include/cabocha.h"  # you most likely want to change this
+  SEARCH_PATH="/usr/local /usr"
+  SEARCH_FOR="/include/cabocha.h"
   if test -r $PHP_CABOCHA/$SEARCH_FOR; then # path given as parameter
     CABOCHA_DIR=$PHP_CABOCHA
   else # search default path list
@@ -44,8 +29,8 @@ if test "$PHP_CABOCHA" != "no"; then
   PHP_ADD_INCLUDE($CABOCHA_DIR/include)
 
   # --with-cabocha -> check for lib and symbol presence
-  LIBNAME=cabocha # you may want to change this
-  LIBSYMBOL=cabocha_new # you most likely want to change this
+  LIBNAME=cabocha
+  LIBSYMBOL=cabocha_new
 
   PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
   [
@@ -60,4 +45,5 @@ if test "$PHP_CABOCHA" != "no"; then
   PHP_SUBST(CABOCHA_SHARED_LIBADD)
 
   PHP_NEW_EXTENSION(cabocha, cabocha.c, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+
 fi
