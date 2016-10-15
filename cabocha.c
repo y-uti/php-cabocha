@@ -69,9 +69,9 @@ PHP_FUNCTION(cabocha_destroy)
 }
 /* }}} */
 
-/* {{{ proto array cabocha_parse2(cabocha cabocha, string arg)
+/* {{{ proto array cabocha_parse(cabocha cabocha, string arg)
  */
-PHP_FUNCTION(cabocha_parse2)
+PHP_FUNCTION(cabocha_parse)
 {
     zval *zv;
     cabocha_t *cabocha;
@@ -94,9 +94,9 @@ PHP_FUNCTION(cabocha_parse2)
 }
 /* }}} */
 
-/* {{{ proto array cabocha_parse(string arg, string opt = null)
+/* {{{ proto array cabocha_parse_sentence(string arg, string opt = null)
  */
-PHP_FUNCTION(cabocha_parse)
+PHP_FUNCTION(cabocha_parse_sentence)
 {
     char *arg = NULL;
     size_t arg_len;
@@ -352,7 +352,7 @@ const zend_function_entry cabocha_functions[] = {
     PHP_FE(cabocha_new, NULL)
     PHP_FE(cabocha_destroy, NULL)
     PHP_FE(cabocha_parse, NULL)
-    PHP_FE(cabocha_parse2, NULL)
+    PHP_FE(cabocha_parse_sentence, NULL)
     PHP_FE_END
 };
 /* }}} */

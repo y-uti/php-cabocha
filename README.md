@@ -23,20 +23,28 @@ $ sudo make install
 
 ## 使い方
 
-`cabocha_parse` 関数を実行します。解析結果が戻されます。
+`cabocha_parse_sentence` 関数で文字列を解析できます。
 ```
 <?php
-$tree = cabocha_parse('吾輩はここで始めて人間というものを見た。');
+$tree = cabocha_parse_sentence('吾輩はここで始めて人間というものを見た。');
 ```
 
 第二引数に `cabocha` コマンドに渡すオプションを指定できます。
 ```
 <?php
-$tree = cabocha_parse('吾輩はここで始めて人間というものを見た。', '-n2');
+$tree = cabocha_parse_sentence('寒月と、根津、上野、池の端、神田辺を散歩。', '-n2');
+```
+
+複数の文字列を連続して解析するには `cabocha_parse` 関数を利用できます。
+```
+<?php
+$cabocha = cabocha_new('-n2');
+$tree = cabocha_parse($cabocha, '吾輩はここで始めて人間というものを見た。');
+$tree = cabocha_parse($cabocha, '寒月と、根津、上野、池の端、神田辺を散歩。');
 ```
 
 ### 解析結果
 
-解析結果は PHP の配列データとして格納されます。これは CaboCha の `cabocha_sparse_totree` 関数から得られた `cabocha_tree_t` 構造体を PHP の配列に詰め替えたものです。
+解析結果は PHP の配列形式のデータとして格納されます。これは CaboCha の `cabocha_sparse_totree` 関数から得られた `cabocha_tree_t` 構造体を PHP の配列に詰め替えたものです。
 
-`tests/001.phpt` に PHP での簡単な例があります。
+`tests/cabocha_parse.phpt` に簡単な例があります。

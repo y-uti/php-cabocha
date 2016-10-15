@@ -1,11 +1,11 @@
 --TEST--
-Check for cabocha_parse function with options
+cabocha_parse_sentence with options
 --SKIPIF--
 <?php if (!extension_loaded("cabocha")) print "skip"; ?>
 --FILE--
 <?php
 $input = '寒月と、根津、上野、池の端、神田辺を散歩。';
-$tree = cabocha_parse($input, "-n2");
+$tree = cabocha_parse_sentence($input, "-n2");
 
 echo $tree['sentence'], "\n";
 foreach ($tree['chunk'] as $i => $chunk) {

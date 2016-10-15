@@ -1,11 +1,11 @@
 --TEST--
-Check for cabocha_parse function
+cabocha_parse_sentence with no options
 --SKIPIF--
 <?php if (!extension_loaded("cabocha")) print "skip"; ?>
 --FILE--
 <?php
 $input = '吾輩はここで始めて人間というものを見た。';
-$tree = cabocha_parse($input);
+$tree = cabocha_parse_sentence($input);
 
 echo $tree['sentence'], "\n";
 foreach ($tree['chunk'] as $i => $chunk) {
