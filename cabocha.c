@@ -94,6 +94,31 @@ PHP_FUNCTION(cabocha_parse)
 }
 /* }}} */
 
+/* {{{ proto string cabocha_parse_tostr(cabocha cabocha, string arg)
+ */
+PHP_FUNCTION(cabocha_parse_tostr)
+{
+    zval *zv;
+    cabocha_t *cabocha;
+
+    char *arg = NULL;
+    size_t arg_len;
+
+    char *str = NULL;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs", &zv, &arg, &arg_len) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    if ((cabocha = fetch_cabocha(zv)) == NULL) {
+        return;
+    }
+
+    str = cabocha_sparse_tostr(cabocha, arg);
+    RETURN_STRING(str);
+}
+/* }}} */
+
 /* {{{ proto array cabocha_parse_sentence(string arg, string opt = null)
  */
 PHP_FUNCTION(cabocha_parse_sentence)
@@ -115,6 +140,32 @@ PHP_FUNCTION(cabocha_parse_sentence)
 
     tree = cabocha_sparse_totree(cabocha, arg);
     zval_tree(tree, return_value);
+
+    cabocha_destroy(cabocha);
+}
+/* }}} */
+
+/* {{{ proto string cabocha_parse_sentence_tostr(string arg, string opt = null)
+ */
+PHP_FUNCTION(cabocha_parse_sentence_tostr)
+{
+    char *arg = NULL;
+    size_t arg_len;
+
+    char *opt = NULL;
+    size_t opt_len;
+
+    cabocha_t *cabocha;
+    char *str = NULL;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s", &arg, &arg_len, &opt, &opt_len) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    cabocha = opt ? cabocha_new2(opt) : cabocha_new(0, NULL);
+
+    str = cabocha_sparse_tostr(cabocha, arg);
+    RETVAL_STRING(str);
 
     cabocha_destroy(cabocha);
 }
@@ -352,7 +403,9 @@ const zend_function_entry cabocha_functions[] = {
     PHP_FE(cabocha_new, NULL)
     PHP_FE(cabocha_destroy, NULL)
     PHP_FE(cabocha_parse, NULL)
+    PHP_FE(cabocha_parse_tostr, NULL)
     PHP_FE(cabocha_parse_sentence, NULL)
+    PHP_FE(cabocha_parse_sentence_tostr, NULL)
     PHP_FE_END
 };
 /* }}} */
