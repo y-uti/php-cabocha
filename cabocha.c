@@ -30,6 +30,10 @@ static void zval_feature_list(char **feature_list, size_t feature_list_size, zva
 static zval **build_chunk_entries(zval *chunks, cabocha_tree_t *tree);
 static cabocha_t *fetch_cabocha(zval *zv);
 
+static void tree_zval(zval *zv, cabocha_tree_t *tree);
+static void chunk_zval(zval *zv, cabocha_chunk_t *chunk);
+static void token_zval(zval *zv, cabocha_tree_t *tree, cabocha_token_t *token, size_t *ci);
+
 /* {{{ proto cabocha cabocha_new(string arg)
  */
 PHP_FUNCTION(cabocha_new)
@@ -169,6 +173,31 @@ PHP_FUNCTION(cabocha_parse_sentence_tostr)
 
     cabocha_destroy(cabocha);
 }
+/* }}} */
+
+/* {{{ proto string cabocha_tree_tostr(array tree, int format)
+ */
+PHP_FUNCTION(cabocha_tree_tostr)
+{
+    zval *arr;
+    zend_long format;
+
+    cabocha_tree_t *tree;
+    char *str = NULL;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "al", &arr, &format) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    tree = cabocha_tree_new();
+    tree_zval(arr, tree);
+
+    str = cabocha_tree_tostr(tree, format);
+    cabocha_tree_destroy(tree);
+
+    RETVAL_STRING(str);
+}
+
 /* }}} */
 
 static cabocha_t *fetch_cabocha(zval *zv)
@@ -327,6 +356,143 @@ static void zval_feature_list(char **feature_list, size_t feature_list_size, zva
     add_assoc_zval(zv, "feature_list", &features);
 }
 
+#define HASH_LONG(zv, key, lval) { \
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(zv), key, sizeof(key) - 1); \
+    lval = Z_LVAL_P(tmp); \
+}
+#define HASH_DOUBLE(zv, key, dval) { \
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(zv), key, sizeof(key) - 1); \
+    dval = Z_DVAL_P(tmp); \
+}
+#define HASH_STR(zv, key, str, len) { \
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(zv), key, sizeof(key) - 1); \
+    str = Z_STRVAL_P(tmp); \
+    len = Z_STRLEN_P(tmp); \
+}
+#define HASH_ARR(zv, key, val) { \
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(zv), key, sizeof(key) - 1); \
+    val = Z_ARRVAL_P(tmp); \
+}
+#define HASH_ISNULL(zv, key) \
+    Z_ISNULL_P(zend_hash_str_find(Z_ARRVAL_P(zv), key, sizeof(key) - 1))
+
+static void tree_zval(zval *zv, cabocha_tree_t *tree)
+{
+    zend_long l;
+    char *str;
+    size_t str_len;
+    zend_array *arr;
+    zval *val;
+
+    cabocha_chunk_t *chunk;
+    cabocha_token_t *token;
+    size_t ci = 0;
+
+    HASH_STR(zv, "sentence", str, str_len);
+    cabocha_tree_set_sentence(tree, str, str_len);
+
+    HASH_ARR(zv, "chunk", arr);
+    ZEND_HASH_FOREACH_VAL(arr, val) {
+        chunk = cabocha_tree_add_chunk(tree);
+        chunk_zval(val, chunk);
+    } ZEND_HASH_FOREACH_END();
+
+    HASH_ARR(zv, "token", arr);
+    ZEND_HASH_FOREACH_VAL(arr, val) {
+        token = cabocha_tree_add_token(tree);
+        token_zval(val, tree, token, &ci);
+    } ZEND_HASH_FOREACH_END();
+
+    HASH_LONG(zv, "charset", l);
+    cabocha_tree_set_charset(tree, l);
+
+    HASH_LONG(zv, "posset", l);
+    cabocha_tree_set_posset(tree, l);
+
+    HASH_LONG(zv, "output_layer", l);
+    cabocha_tree_set_output_layer(tree, l);
+}
+
+static void chunk_zval(zval *zv, cabocha_chunk_t *chunk)
+{
+    zend_long l;
+    double d;
+    char *str;
+    size_t str_len;
+
+    HASH_LONG(zv, "link", l);
+    chunk->link = l;
+
+    HASH_LONG(zv, "head_pos", l);
+    chunk->head_pos = l;
+
+    HASH_LONG(zv, "func_pos", l);
+    chunk->func_pos = l;
+
+    HASH_LONG(zv, "token_size", l);
+    chunk->token_size = l;
+
+    HASH_LONG(zv, "token_pos", l);
+    chunk->token_pos = l;
+
+    HASH_DOUBLE(zv, "score", d);
+    chunk->score = d;
+
+    if (!HASH_ISNULL(zv, "additional_info")) {
+        HASH_STR(zv, "additional_info", str, str_len);
+        chunk->additional_info = strndup(str, str_len);
+    }
+
+    HASH_LONG(zv, "feature_list_size", l);
+    chunk->feature_list_size = l;
+}
+
+static void token_zval(zval *zv, cabocha_tree_t *tree, cabocha_token_t *token, size_t *ci)
+{
+    zend_long l;
+    char *str;
+    size_t str_len;
+
+    if (!HASH_ISNULL(zv, "surface")) {
+        HASH_STR(zv, "surface", str, str_len);
+        token->surface = strndup(str, str_len);
+    }
+
+    if (!HASH_ISNULL(zv, "normalized_surface")) {
+        HASH_STR(zv, "normalized_surface", str, str_len);
+        token->normalized_surface = strndup(str, str_len);
+    }
+
+    if (!HASH_ISNULL(zv, "feature")) {
+        HASH_STR(zv, "feature", str, str_len);
+        token->feature = strndup(str, str_len);
+    }
+
+    HASH_LONG(zv, "feature_list_size", l);
+    token->feature_list_size = l;
+
+    if (!HASH_ISNULL(zv, "ne")) {
+        HASH_STR(zv, "ne", str, str_len);
+        token->ne = strndup(str, str_len);
+    }
+
+    if (!HASH_ISNULL(zv, "additional_info")) {
+        HASH_STR(zv, "additional_info", str, str_len);
+        token->additional_info = strndup(str, str_len);
+    }
+
+    if (!HASH_ISNULL(zv, "chunk")) {
+        token->chunk = cabocha_tree_chunk(tree, *ci);
+        *ci = *ci + 1;
+    }
+}
+
+#undef HASH_LONG
+#undef HASH_DOUBLE
+#undef HASH_STR
+#undef HASH_ZVAL
+#undef HASH_ISNULL
+
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(cabocha)
@@ -406,6 +572,7 @@ const zend_function_entry cabocha_functions[] = {
     PHP_FE(cabocha_parse_tostr, NULL)
     PHP_FE(cabocha_parse_sentence, NULL)
     PHP_FE(cabocha_parse_sentence_tostr, NULL)
+    PHP_FE(cabocha_tree_tostr, NULL)
     PHP_FE_END
 };
 /* }}} */
