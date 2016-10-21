@@ -193,9 +193,9 @@ PHP_FUNCTION(cabocha_tree_tostr)
     tree_zval(arr, tree);
 
     str = cabocha_tree_tostr(tree, format);
-    cabocha_tree_destroy(tree);
-
     RETVAL_STRING(str);
+
+    cabocha_tree_destroy(tree);
 }
 
 /* }}} */
