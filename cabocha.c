@@ -175,6 +175,33 @@ PHP_FUNCTION(cabocha_parse_sentence_tostr)
 }
 /* }}} */
 
+/* {{{ proto array cabocha_tree_read(string arg, int input_layer)
+ */
+PHP_FUNCTION(cabocha_tree_read)
+{
+    char *arg = NULL;
+    size_t arg_len;
+    zend_long input_layer;
+
+    cabocha_tree_t *tree;
+    int res;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "sl", &arg, &arg_len, &input_layer) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    tree = cabocha_tree_new();
+    res = cabocha_tree_read(tree, arg, arg_len, input_layer);
+    if (res) {
+        zval_tree(tree, return_value);
+    } else {
+        RETVAL_FALSE;
+    }
+
+    cabocha_tree_destroy(tree);
+}
+/* }}} */
+
 /* {{{ proto string cabocha_tree_tostr(array tree, int format)
  */
 PHP_FUNCTION(cabocha_tree_tostr)
@@ -572,6 +599,7 @@ const zend_function_entry cabocha_functions[] = {
     PHP_FE(cabocha_parse_tostr, NULL)
     PHP_FE(cabocha_parse_sentence, NULL)
     PHP_FE(cabocha_parse_sentence_tostr, NULL)
+    PHP_FE(cabocha_tree_read, NULL)
     PHP_FE(cabocha_tree_tostr, NULL)
     PHP_FE_END
 };
