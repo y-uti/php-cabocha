@@ -4,7 +4,7 @@
 extern zend_module_entry cabocha_module_entry;
 #define phpext_cabocha_ptr &cabocha_module_entry
 
-#define PHP_CABOCHA_VERSION "0.3.0"
+#define PHP_CABOCHA_VERSION "0.3.0-dev"
 
 #ifdef PHP_WIN32
 #   define PHP_CABOCHA_API __declspec(dllexport)
