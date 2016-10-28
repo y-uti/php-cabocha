@@ -26,6 +26,7 @@ $input = <<<END_OF_INPUT
 。	記号,句点,*,*,*,*,。,。,。
 EOS
 END_OF_INPUT;
+$input .= PHP_EOL;
 $input_layer = CABOCHA_INPUT_DEP;
 $tree = cabocha_tree_read($input, $input_layer);
 
