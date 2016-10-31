@@ -28,7 +28,7 @@ static void zval_chunk(cabocha_chunk_t *chunk, zval *zv);
 static void zval_token(cabocha_token_t *token, zval *chunk, zval *zv);
 static void zval_feature_list(char **feature_list, size_t feature_list_size, zval *zv);
 static zval **build_chunk_entries(zval *chunks, cabocha_tree_t *tree);
-static cabocha_t *fetch_cabocha(zval *zv);
+static cabocha_t *fetch_cabocha(zval *res);
 
 static void tree_zval(zval *zv, cabocha_tree_t *tree);
 static void chunk_zval(zval *zv, cabocha_chunk_t *chunk);
@@ -42,7 +42,6 @@ PHP_FUNCTION(cabocha_new)
     size_t arg_len;
 
     cabocha_t *cabocha;
-    zend_resource *res;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s", &arg, &arg_len) == FAILURE) {
         RETURN_FALSE;
@@ -58,18 +57,18 @@ PHP_FUNCTION(cabocha_new)
  */
 PHP_FUNCTION(cabocha_destroy)
 {
-    zval *zv;
+    zval *res;
     cabocha_t *cabocha;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zv) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &res) == FAILURE) {
         return;
     }
 
-    if ((cabocha = fetch_cabocha(zv)) == NULL) {
+    if ((cabocha = fetch_cabocha(res)) == NULL) {
         return;
     }
 
-    zend_list_close(Z_RES_P(zv));
+    zend_list_close(Z_RES_P(res));
 }
 /* }}} */
 
@@ -77,7 +76,7 @@ PHP_FUNCTION(cabocha_destroy)
  */
 PHP_FUNCTION(cabocha_parse)
 {
-    zval *zv;
+    zval *res;
     cabocha_t *cabocha;
 
     char *arg = NULL;
@@ -85,11 +84,11 @@ PHP_FUNCTION(cabocha_parse)
 
     cabocha_tree_t *tree;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs", &zv, &arg, &arg_len) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs", &res, &arg, &arg_len) == FAILURE) {
         RETURN_FALSE;
     }
 
-    if ((cabocha = fetch_cabocha(zv)) == NULL) {
+    if ((cabocha = fetch_cabocha(res)) == NULL) {
         return;
     }
 
@@ -102,7 +101,7 @@ PHP_FUNCTION(cabocha_parse)
  */
 PHP_FUNCTION(cabocha_parse_tostr)
 {
-    zval *zv;
+    zval *res;
     cabocha_t *cabocha;
 
     char *arg = NULL;
@@ -110,11 +109,11 @@ PHP_FUNCTION(cabocha_parse_tostr)
 
     char *str = NULL;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs", &zv, &arg, &arg_len) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rs", &res, &arg, &arg_len) == FAILURE) {
         RETURN_FALSE;
     }
 
-    if ((cabocha = fetch_cabocha(zv)) == NULL) {
+    if ((cabocha = fetch_cabocha(res)) == NULL) {
         return;
     }
 
@@ -227,10 +226,10 @@ PHP_FUNCTION(cabocha_tree_tostr)
 
 /* }}} */
 
-static cabocha_t *fetch_cabocha(zval *zv)
+static cabocha_t *fetch_cabocha(zval *res)
 {
     return (cabocha_t *) zend_fetch_resource(
-        Z_RES_P(zv),
+        Z_RES_P(res),
         PHP_CABOCHA_RES_NAME,
         le_cabocha
     );
