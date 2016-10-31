@@ -585,7 +585,7 @@ PHP_MSHUTDOWN_FUNCTION(cabocha)
 PHP_MINFO_FUNCTION(cabocha)
 {
     php_info_print_table_start();
-    php_info_print_table_header(2, "cabocha support", "enabled");
+    php_info_print_table_row(2, "CaboCha support", "enabled");
     php_info_print_table_end();
 }
 /* }}} */
