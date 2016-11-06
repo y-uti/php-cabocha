@@ -34,6 +34,47 @@ static void tree_zval(zval *zv, cabocha_tree_t *tree);
 static void chunk_zval(zval *zv, cabocha_chunk_t *chunk);
 static void token_zval(zval *zv, cabocha_tree_t *tree, cabocha_token_t *token, size_t *ci);
 
+/* {{{ arginfo
+ */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_new, 0, 0, 0)
+    ZEND_ARG_INFO(0, arg)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_destroy, 0, 0, 1)
+    ZEND_ARG_INFO(0, cabocha)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_parse, 0, 0, 2)
+    ZEND_ARG_INFO(0, cabocha)
+    ZEND_ARG_INFO(0, arg)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_parse_tostr, 0, 0, 2)
+    ZEND_ARG_INFO(0, cabocha)
+    ZEND_ARG_INFO(0, arg)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_parse_sentence, 0, 0, 1)
+    ZEND_ARG_INFO(0, arg)
+    ZEND_ARG_INFO(0, opt)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_parse_sentence_tostr, 0, 0, 1)
+    ZEND_ARG_INFO(0, arg)
+    ZEND_ARG_INFO(0, opt)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_tree_read, 0, 0, 2)
+    ZEND_ARG_INFO(0, arg)
+    ZEND_ARG_INFO(0, input_layer)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_tree_tostr, 0, 0, 2)
+    ZEND_ARG_INFO(0, tree)
+    ZEND_ARG_INFO(0, format)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ proto cabocha cabocha_new(string arg)
  */
 PHP_FUNCTION(cabocha_new)
@@ -223,7 +264,6 @@ PHP_FUNCTION(cabocha_tree_tostr)
 
     cabocha_tree_destroy(tree);
 }
-
 /* }}} */
 
 static cabocha_t *fetch_cabocha(zval *res)
@@ -592,14 +632,14 @@ PHP_MINFO_FUNCTION(cabocha)
 /* {{{ cabocha_functions[]
  */
 const zend_function_entry cabocha_functions[] = {
-    PHP_FE(cabocha_new, NULL)
-    PHP_FE(cabocha_destroy, NULL)
-    PHP_FE(cabocha_parse, NULL)
-    PHP_FE(cabocha_parse_tostr, NULL)
-    PHP_FE(cabocha_parse_sentence, NULL)
-    PHP_FE(cabocha_parse_sentence_tostr, NULL)
-    PHP_FE(cabocha_tree_read, NULL)
-    PHP_FE(cabocha_tree_tostr, NULL)
+    PHP_FE(cabocha_new,                  arginfo_cabocha_new)
+    PHP_FE(cabocha_destroy,              arginfo_cabocha_destroy)
+    PHP_FE(cabocha_parse,                arginfo_cabocha_parse)
+    PHP_FE(cabocha_parse_tostr,          arginfo_cabocha_parse_tostr)
+    PHP_FE(cabocha_parse_sentence,       arginfo_cabocha_parse_sentence)
+    PHP_FE(cabocha_parse_sentence_tostr, arginfo_cabocha_parse_sentence_tostr)
+    PHP_FE(cabocha_tree_read,            arginfo_cabocha_tree_read)
+    PHP_FE(cabocha_tree_tostr,           arginfo_cabocha_tree_tostr)
     PHP_FE_END
 };
 /* }}} */
