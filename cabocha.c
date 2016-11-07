@@ -632,15 +632,21 @@ PHP_MINFO_FUNCTION(cabocha)
 /* {{{ cabocha_functions[]
  */
 const zend_function_entry cabocha_functions[] = {
-    PHP_FE(cabocha_new,                  arginfo_cabocha_new)
-    PHP_FE(cabocha_destroy,              arginfo_cabocha_destroy)
-    PHP_FE(cabocha_parse,                arginfo_cabocha_parse)
-    PHP_FE(cabocha_parse_tostr,          arginfo_cabocha_parse_tostr)
-    PHP_FE(cabocha_parse_sentence,       arginfo_cabocha_parse_sentence)
-    PHP_FE(cabocha_parse_sentence_tostr, arginfo_cabocha_parse_sentence_tostr)
-    PHP_FE(cabocha_tree_read,            arginfo_cabocha_tree_read)
-    PHP_FE(cabocha_tree_tostr,           arginfo_cabocha_tree_tostr)
+
+#define PHP_FE_WITH_ARG_INFO(name) PHP_FE(name, arginfo_##name)
+
+    PHP_FE_WITH_ARG_INFO(cabocha_new)
+    PHP_FE_WITH_ARG_INFO(cabocha_destroy)
+    PHP_FE_WITH_ARG_INFO(cabocha_parse)
+    PHP_FE_WITH_ARG_INFO(cabocha_parse_tostr)
+    PHP_FE_WITH_ARG_INFO(cabocha_parse_sentence)
+    PHP_FE_WITH_ARG_INFO(cabocha_parse_sentence_tostr)
+    PHP_FE_WITH_ARG_INFO(cabocha_tree_read)
+    PHP_FE_WITH_ARG_INFO(cabocha_tree_tostr)
     PHP_FE_END
+
+#undef PHP_FE_WITH_ARG_INFO
+
 };
 /* }}} */
 
