@@ -21,6 +21,8 @@ static void php_cabocha_dtor(zend_resource *res)
     }
 }
 
+static cabocha_t *cabocha_new_instance(char *arg);
+
 static void zval_tree(cabocha_tree_t *tree, zval *zv);
 static void zval_tree_chunks(cabocha_tree_t *tree, zval *zv);
 static void zval_tree_tokens(cabocha_tree_t *tree, zval *chunks, zval *zv);
@@ -88,7 +90,9 @@ PHP_FUNCTION(cabocha_new)
         RETURN_FALSE;
     }
 
-    cabocha = arg ? cabocha_new2(arg) : cabocha_new(0, NULL);
+    if ((cabocha = cabocha_new_instance(arg)) == NULL) {
+        RETURN_FALSE;
+    }
 
     RETURN_RES(zend_register_resource(cabocha, le_cabocha));
 }
@@ -180,7 +184,9 @@ PHP_FUNCTION(cabocha_parse_sentence)
         RETURN_FALSE;
     }
 
-    cabocha = arg ? cabocha_new2(arg) : cabocha_new(0, NULL);
+    if ((cabocha = cabocha_new_instance(arg)) == NULL) {
+        RETURN_FALSE;
+    }
 
     tree = cabocha_sparse_totree(cabocha, input);
     zval_tree(tree, return_value);
@@ -206,7 +212,9 @@ PHP_FUNCTION(cabocha_parse_sentence_tostr)
         RETURN_FALSE;
     }
 
-    cabocha = arg ? cabocha_new2(arg) : cabocha_new(0, NULL);
+    if ((cabocha = cabocha_new_instance(arg)) == NULL) {
+        RETURN_FALSE;
+    }
 
     output = cabocha_sparse_tostr(cabocha, input);
     RETVAL_STRING(output);
@@ -265,6 +273,18 @@ PHP_FUNCTION(cabocha_tree_tostr)
     cabocha_tree_destroy(tree);
 }
 /* }}} */
+
+static cabocha_t *cabocha_new_instance(char *arg)
+{
+    cabocha_t *cabocha;
+
+    cabocha = arg ? cabocha_new2(arg) : cabocha_new(0, NULL);
+    if (!cabocha) {
+        php_error_docref(NULL, E_WARNING, "%s", cabocha_strerror(NULL));
+    }
+
+    return cabocha;
+}
 
 static cabocha_t *fetch_cabocha(zval *res)
 {
