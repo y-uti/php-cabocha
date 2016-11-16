@@ -75,6 +75,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_tree_tostr, 0, 0, 2)
     ZEND_ARG_INFO(0, tree)
     ZEND_ARG_INFO(0, format)
 ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_cabocha_strerror, 0, 0, 0)
+    ZEND_ARG_INFO(0, cabocha)
+ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ proto cabocha cabocha_new(string arg)
@@ -271,6 +275,28 @@ PHP_FUNCTION(cabocha_tree_tostr)
     RETVAL_STRING(output);
 
     cabocha_tree_destroy(tree);
+}
+/* }}} */
+
+/* {{{ proto string cabocha_strerror(cabocha cabocha = null)
+ */
+PHP_FUNCTION(cabocha_strerror)
+{
+    zval *res = NULL;
+    cabocha_t *cabocha = NULL;
+
+    char *str;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|r", &res) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    if (res != NULL && (cabocha = fetch_cabocha(res)) == NULL) {
+        return;
+    }
+
+    str = cabocha_strerror(cabocha);
+    RETURN_STRING(str);
 }
 /* }}} */
 
@@ -663,6 +689,7 @@ const zend_function_entry cabocha_functions[] = {
     PHP_FE_WITH_ARG_INFO(cabocha_parse_sentence_tostr)
     PHP_FE_WITH_ARG_INFO(cabocha_tree_read)
     PHP_FE_WITH_ARG_INFO(cabocha_tree_tostr)
+    PHP_FE_WITH_ARG_INFO(cabocha_strerror)
     PHP_FE_END
 
 #undef PHP_FE_WITH_ARG_INFO
