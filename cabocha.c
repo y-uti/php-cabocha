@@ -142,6 +142,11 @@ PHP_FUNCTION(cabocha_parse)
     }
 
     tree = cabocha_sparse_totree(cabocha, input);
+    if (!tree) {
+        php_error_docref(NULL, E_WARNING, "%s", cabocha_strerror(cabocha));
+        RETURN_FALSE;
+    }
+
     zval_tree(tree, return_value);
 }
 /* }}} */
