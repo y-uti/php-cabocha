@@ -22,6 +22,9 @@ static void php_cabocha_dtor(zend_resource *res)
 }
 
 static cabocha_t *cabocha_new_instance(char *arg);
+static cabocha_tree_t *parse_totree(cabocha_t *cabocha, char *input);
+static char *parse_tostr(cabocha_t *cabocha, char *input);
+static void warn(cabocha_t *cabocha);
 
 static void zval_tree(cabocha_tree_t *tree, zval *zv);
 static void zval_tree_chunks(cabocha_tree_t *tree, zval *zv);
@@ -141,9 +144,7 @@ PHP_FUNCTION(cabocha_parse)
         return;
     }
 
-    tree = cabocha_sparse_totree(cabocha, input);
-    if (!tree) {
-        php_error_docref(NULL, E_WARNING, "%s", cabocha_strerror(cabocha));
+    if ((tree = parse_totree(cabocha, input)) == NULL) {
         RETURN_FALSE;
     }
 
@@ -171,7 +172,10 @@ PHP_FUNCTION(cabocha_parse_tostr)
         return;
     }
 
-    output = cabocha_sparse_tostr(cabocha, input);
+    if ((output = parse_tostr(cabocha, input)) == NULL) {
+        RETURN_FALSE;
+    }
+
     RETURN_STRING(output);
 }
 /* }}} */
@@ -197,7 +201,11 @@ PHP_FUNCTION(cabocha_parse_sentence)
         RETURN_FALSE;
     }
 
-    tree = cabocha_sparse_totree(cabocha, input);
+    if ((tree = parse_totree(cabocha, input)) == NULL) {
+        cabocha_destroy(cabocha);
+        RETURN_FALSE;
+    }
+
     zval_tree(tree, return_value);
 
     cabocha_destroy(cabocha);
@@ -225,7 +233,11 @@ PHP_FUNCTION(cabocha_parse_sentence_tostr)
         RETURN_FALSE;
     }
 
-    output = cabocha_sparse_tostr(cabocha, input);
+    if ((output = parse_tostr(cabocha, input)) == NULL) {
+        cabocha_destroy(cabocha);
+        RETURN_FALSE;
+    }
+
     RETVAL_STRING(output);
 
     cabocha_destroy(cabocha);
@@ -311,7 +323,7 @@ static cabocha_t *cabocha_new_instance(char *arg)
 
     cabocha = arg ? cabocha_new2(arg) : cabocha_new(0, NULL);
     if (!cabocha) {
-        php_error_docref(NULL, E_WARNING, "%s", cabocha_strerror(NULL));
+        warn(NULL);
     }
 
     return cabocha;
@@ -324,6 +336,35 @@ static cabocha_t *fetch_cabocha(zval *res)
         PHP_CABOCHA_RES_NAME,
         le_cabocha
     );
+}
+
+static cabocha_tree_t *parse_totree(cabocha_t *cabocha, char *input)
+{
+    cabocha_tree_t *tree;
+
+    tree = cabocha_sparse_totree(cabocha, input);
+    if (!tree) {
+        warn(cabocha);
+    }
+
+    return tree;
+}
+
+static char *parse_tostr(cabocha_t *cabocha, char *input)
+{
+    char *output;
+
+    output = cabocha_sparse_tostr(cabocha, input);
+    if (!output) {
+        warn(cabocha);
+    }
+
+    return output;
+}
+
+static void warn(cabocha_t *cabocha)
+{
+    php_error_docref(NULL, E_WARNING, "%s", cabocha_strerror(cabocha));
 }
 
 static void zval_tree(cabocha_tree_t *tree, zval *zv)
